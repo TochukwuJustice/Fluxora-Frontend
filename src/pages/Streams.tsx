@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
+import CreateStreamModal from "../components/CreateStreamModal";
+import StreamCreatedModal from "../components/Streams/StreamCreatedModal";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 interface Stream {
@@ -52,7 +54,7 @@ function StreamsEmptyState({ onCreateStream }: { onCreateStream?: () => void }) 
         {/* Create stream button */}
         <button
           style={createButton}
-          onClick={onCreateStream}
+          onClick={() => onCreateStream?.()}
           aria-label="Create a new stream"
           onMouseOver={(e) => {
             (e.currentTarget as HTMLButtonElement).style.boxShadow =
@@ -81,11 +83,22 @@ function StreamsEmptyState({ onCreateStream }: { onCreateStream?: () => void }) 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Streams() {
   // Replace with real stream data from API/wallet
-  const streams: Stream[] = [];
+  const [streams] = useState<Stream[]>([]);
+
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [createdStream, setCreatedStream] = useState({
+    id: "529",
+    url: "https://fluxora.io/stream/529",
+  });
 
   const handleCreateStream = () => {
-    // TODO: open create stream flow/modal
-    console.log('Open create stream flow');
+    setIsCreateModalOpen(true);
+  };
+
+  const handleStreamCreated = () => {
+    setCreatedStream({ id: "529", url: "https://fluxora.io/stream/529" });
+    setIsSuccessModalOpen(true);
   };
 
   return (
@@ -121,6 +134,22 @@ export default function Streams() {
           </table>
         </div>
       )}
+
+      <CreateStreamModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onStreamCreated={handleStreamCreated}
+      />
+      <StreamCreatedModal
+        isOpen={isSuccessModalOpen}
+        onClose={() => setIsSuccessModalOpen(false)}
+        streamId={createdStream.id}
+        streamUrl={createdStream.url}
+        onCreateAnother={() => {
+          setIsSuccessModalOpen(false);
+          setIsCreateModalOpen(true);
+        }}
+      />
     </div>
   );
 }
@@ -215,6 +244,4 @@ const table: React.CSSProperties = {
   width: '100%',
   borderCollapse: 'collapse',
 };
-  width: "100%",
-  borderCollapse: "collapse",
-};
+
