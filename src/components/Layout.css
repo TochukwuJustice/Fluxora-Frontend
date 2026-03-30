@@ -1,10 +1,19 @@
 .app-layout {
   display: flex;
+  flex-direction: column; /* ← change row to column */
   min-height: 100vh;
   position: relative;
   background: var(--bg);
 }
 
+.app-layout__body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.app-layout__sidebar {
+  width: 220px;
 .app-sidebar {
   width: 244px;
   background: var(--surface);
