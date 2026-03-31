@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import CreateStreamModal from "../components/CreateStreamModal";
+import EmptyState from "../components/EmptyState";
 import StreamCreatedModal from "../components/Streams/StreamCreatedModal";
+import StreamsLoading from "../components/StreamsLoading";
 import {
   getStreamRecord,
   streamRecords,
@@ -483,6 +485,7 @@ export default function Streams() {
   const navigate = useNavigate();
   const { streamId } = useParams();
 
+  const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
   const [expandedStreamId, setExpandedStreamId] = useState<string>(
     streamRecords[0]?.id ?? "",
@@ -494,6 +497,12 @@ export default function Streams() {
     url: "https://fluxora.io/stream/STR-NEW",
   });
   const [toastMessage, setToastMessage] = useState("");
+  const walletConnected = true;
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setLoading(false), 2000);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (!toastMessage) return undefined;
@@ -501,6 +510,8 @@ export default function Streams() {
     const timer = window.setTimeout(() => setToastMessage(""), 2200);
     return () => window.clearTimeout(timer);
   }, [toastMessage]);
+
+  if (loading) return <StreamsLoading />;
 
   const activeStreams = streamRecords.filter((stream) => stream.status === "Active");
   const monthlyOutflow = activeStreams.reduce(
@@ -520,6 +531,8 @@ export default function Streams() {
       ? streamRecords
       : streamRecords.filter((stream) => stream.status === statusFilter);
   const selectedStream = streamId ? getStreamRecord(streamId) : undefined;
+  const hasStreams = streamRecords.length > 0;
+  const showEmptyState = !selectedStream && (!walletConnected || !hasStreams);
   const effectiveExpandedId = visibleStreams.some(
     (stream) => stream.id === expandedStreamId,
   )
@@ -586,6 +599,23 @@ export default function Streams() {
           onCreateSimilar={handleCreateStream}
           onCopyAddress={() => void handleCopyRecipient(selectedStream)}
         />
+      ) : showEmptyState ? (
+        <section>
+          <h1 style={{ marginTop: 0 }}>Streams</h1>
+          <p style={{ color: "var(--muted)" }}>
+            Create and manage USDC streams. Set rate, duration, and cliff from
+            the treasury.
+          </p>
+          <EmptyState
+            variant="streams"
+            walletConnected={walletConnected}
+            onPrimaryAction={
+              walletConnected
+                ? handleCreateStream
+                : () => navigate("/connect-wallet")
+            }
+          />
+        </section>
       ) : (
         <>
           <section className="streams-hero">
@@ -609,7 +639,7 @@ export default function Streams() {
               <button
                 type="button"
                 className="streams-secondary-button"
-                onClick={() => navigate(`/app/streams/${streamRecords[0].id}`)}
+                onClick={() => navigate(`/app/streams/${streamRecords[0]?.id}`)}
               >
                 Open featured deep dive
               </button>
