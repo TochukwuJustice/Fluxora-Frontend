@@ -1,11 +1,41 @@
+import React, { useEffect, useState } from "react";
+import EmptyState from "../components/EmptyState";
+import RecipientLoading from "../components/RecipientLoading";
+
 export default function Recipient() {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 2000);
+    return () => clearTimeout(t);
+  }, []);
+
   const balance: number = 22600.0;
   const activeStreams = 2;
   const totalAccrued = 43250.0;
   const totalWithdrawn = 20650.0;
   const walletConnected = true;
+  // Replace with real stream data
+  const hasStreams = activeStreams > 0;
 
   const disabled = !walletConnected || balance === 0;
+
+  if (loading) return <RecipientLoading />;
+
+  if (!walletConnected || !hasStreams) {
+    return (
+      <div>
+        <h1 style={{ marginTop: 0, fontSize: "2rem", fontWeight: 700 }}>Your streams</h1>
+        <p style={{ color: "var(--muted)", marginBottom: "2rem" }}>
+          View your incoming streams and withdraw accrued USDC at any time.
+        </p>
+        <EmptyState
+          variant="recipient"
+          walletConnected={walletConnected}
+        />
+      </div>
+    );
+  }
 
   return (
     <div>
