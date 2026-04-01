@@ -1,4 +1,3 @@
-import React from "react";
 import { Skeleton, SkeletonCard } from "./Skeleton";
 import "./skeleton.css";
 
