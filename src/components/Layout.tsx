@@ -32,17 +32,18 @@ export default function Layout({
         />
 
         {/* Main Content Area */}
-        <div className="flex flex-col flex-1 min-w-0 md:ml-0 transition-all duration-300">
-          <main className="flex-1 p-4 md:p-8 overflow-auto">
-            {/* Desktop padding adjustment if sidebar is not fixed? 
-                Actually our Sidebar is fixed, so we need to add margin on desktop.
-            */}
-            <div className={isSidebarCollapsed ? "md:pl-20" : "md:pl-64"}>
-              <Outlet />
-            </div>
+        <div className="flex flex-col flex-1 min-w-0 transition-all duration-300 ease-in-out">
+          <main 
+            className={cn(
+              "flex-1 p-4 md:p-8 overflow-auto transition-all duration-300 ease-in-out",
+              isSidebarCollapsed ? "md:ml-20" : "md:ml-64"
+            )}
+            role="main"
+          >
+            <Outlet />
           </main>
 
-          <div className={isSidebarCollapsed ? "md:pl-20" : "md:pl-64"}>
+          <div className={cn("transition-all duration-300 ease-in-out", isSidebarCollapsed ? "md:ml-20" : "md:ml-64")}>
             {showFooter ? <Footer /> : null}
           </div>
         </div>

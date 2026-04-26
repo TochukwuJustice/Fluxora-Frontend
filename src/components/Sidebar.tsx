@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -31,6 +31,7 @@ export default function Sidebar({
 }: SidebarProps) {
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(false);
+  const sidebarRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -38,6 +39,46 @@ export default function Sidebar({
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  // Escape key support
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onMobileClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [mobileOpen, onMobileClose]);
+
+  // Focus trapping
+  useEffect(() => {
+    if (!mobileOpen || !sidebarRef.current) return;
+
+    const focusableElements = sidebarRef.current.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    const firstElement = focusableElements[0] as HTMLElement;
+    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+    const handleTab = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          lastElement.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          firstElement.focus();
+          e.preventDefault();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleTab);
+    return () => window.removeEventListener("keydown", handleTab);
+  }, [mobileOpen]);
 
   const navItems = [
     { to: "/app", label: "Dashboard", icon: LayoutDashboard, end: true },
@@ -64,6 +105,7 @@ export default function Sidebar({
 
       {/* Sidebar Drawer */}
       <aside
+        ref={sidebarRef}
         id="app-sidebar"
         className={cn(
           "fixed left-0 top-0 z-50 h-screen bg-[var(--surface)] border-r border-[var(--border)] transition-all duration-300 ease-in-out flex flex-col",
@@ -74,6 +116,7 @@ export default function Sidebar({
           "md:translate-x-0",
           collapsed ? "md:w-20" : "md:w-64"
         )}
+        role="navigation"
         aria-label="Primary navigation"
         aria-hidden={isMobile && !mobileOpen}
       >
@@ -85,7 +128,7 @@ export default function Sidebar({
                 navigate("/");
                 onMobileClose();
               }}
-              className="flex items-center gap-3 group outline-none"
+              className="flex items-center gap-3 group outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] rounded-lg"
               aria-label="Fluxora home"
             >
               <div className="w-8 h-8 rounded-lg bg-gradient-to-b from-[#00B8D4] to-[#0097A7] flex items-center justify-center text-white font-bold shadow-lg shadow-[#00B8D4]/20 group-hover:scale-105 transition-transform">
@@ -104,7 +147,7 @@ export default function Sidebar({
             {/* Mobile Close Button */}
             <button
               onClick={onMobileClose}
-              className="md:hidden p-2 text-[var(--muted)] hover:text-[var(--text)] transition-colors"
+              className="md:hidden p-2 text-[var(--muted)] hover:text-[var(--text)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--accent)] rounded-md"
               aria-label="Close sidebar"
             >
               <X size={20} />
@@ -121,9 +164,10 @@ export default function Sidebar({
                 to={item.to}
                 end={item.end}
                 onClick={onMobileClose}
+                aria-current="page"
                 className={({ isActive }) =>
                   cn(
-                    "relative flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all group",
+                    "relative flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all group outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]",
                     isActive
                       ? "bg-[var(--accent)]/10 text-[var(--accent)]"
                       : "text-[var(--muted)] hover:bg-[var(--surface-elevated)] hover:text-[var(--text)]"
@@ -132,9 +176,13 @@ export default function Sidebar({
               >
                 {({ isActive }) => (
                   <>
-                    {isActive && (
-                      <div className="absolute left-0 top-2 bottom-2 w-1 bg-[var(--accent)] rounded-r-full" />
-                    )}
+                    {/* Active Indicator (Design Spec 4.2) */}
+                    <div 
+                      className={cn(
+                        "absolute left-0 top-1 bottom-1 w-[3px] bg-[var(--accent)] rounded-r-full transition-opacity duration-200",
+                        isActive ? "opacity-100" : "opacity-0"
+                      )} 
+                    />
                     <item.icon
                       size={20}
                       className={cn(
@@ -164,7 +212,7 @@ export default function Sidebar({
               <a
                 key={item.label}
                 href={item.href}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-[var(--muted)] hover:bg-[var(--surface-elevated)] hover:text-[var(--text)] transition-all group"
+                className="flex items-center gap-3 px-3 py-2 rounded-lg text-[var(--muted)] hover:bg-[var(--surface-elevated)] hover:text-[var(--text)] transition-all group outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
               >
                 <item.icon size={20} className="flex-shrink-0 group-hover:text-[var(--text)]" />
                 <span
@@ -181,7 +229,7 @@ export default function Sidebar({
             {/* Desktop Collapse Toggle */}
             <button
               onClick={onToggleCollapse}
-              className="hidden md:flex w-full items-center gap-3 px-3 py-3 mt-2 text-[var(--muted)] hover:text-[var(--accent)] transition-all group"
+              className="hidden md:flex w-full items-center gap-3 px-3 py-3 mt-2 text-[var(--muted)] hover:text-[var(--accent)] transition-all group outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] rounded-lg"
               aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
               <ChevronLeft

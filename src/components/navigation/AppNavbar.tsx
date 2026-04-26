@@ -126,13 +126,13 @@ export default function AppNavbar({
           {/* Mobile Sidebar Toggle (only in App View) */}
           {isAppView && (
             <button
-              className="md:hidden flex items-center justify-center w-10 h-10 rounded-md text-[var(--navbar-icon-color)] hover:text-[var(--text)] transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+              className="md:hidden flex items-center justify-center w-11 h-11 -ml-2 rounded-lg text-[var(--navbar-icon-color)] hover:text-[var(--text)] hover:bg-[var(--surface-elevated)] transition-all outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
               onClick={onSidebarToggle}
-              aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
+              aria-label={isSidebarOpen ? "Close navigation sidebar" : "Open navigation sidebar"}
               aria-expanded={isSidebarOpen}
               aria-controls="app-sidebar"
             >
-              {isSidebarOpen ? <X size={24} aria-hidden="true" /> : <Menu size={24} aria-hidden="true" />}
+              {isSidebarOpen ? <X size={26} aria-hidden="true" /> : <Menu size={26} aria-hidden="true" />}
             </button>
           )}
           <FluxoraLogo connected={connected} />
